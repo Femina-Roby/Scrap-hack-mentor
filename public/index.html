@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>Mentor Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Sora:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+<style>
+  .app{max-width:520px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;}
+  .top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:2px solid var(--line);
+       display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));}
+  .brand{font-family:"Baloo 2";font-weight:800;font-size:1.35rem;color:var(--blue);line-height:1;text-decoration:none;}
+  .brand small{font-family:"Space Mono";font-size:.62rem;letter-spacing:.14em;color:var(--orange-deep);display:block;margin-top:2px;text-transform:uppercase;}
+  .who{border:2px solid var(--outline);border-radius:999px;padding:6px 12px;font-weight:700;font-size:.85rem;background:#fff;text-decoration:none;max-width:45vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .back{font-weight:700;text-decoration:none;padding:6px 0;display:inline-flex;gap:6px;align-items:center;}
+  main{flex:1;padding:18px 16px 120px;display:flex;flex-direction:column;gap:18px;}
+  .tabs{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#fff;border-top:2.5px solid var(--outline);
+        display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);}
+  .tabs-in{display:flex;width:100%;max-width:520px;}
+  .tab{flex:1;text-align:center;padding:14px 8px;font-weight:700;text-decoration:none;color:var(--ink-soft);font-size:.98rem;border-top:4px solid transparent;margin-top:-2.5px;}
+  .tab.on{color:var(--ink);border-top-color:var(--orange);}
+  .badge{display:inline-block;min-width:22px;padding:1px 7px;margin-left:6px;border-radius:999px;background:var(--orange);color:#fff;font-size:.78rem;}
+  .list{display:flex;flex-direction:column;gap:10px;}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:2px solid var(--line);border-radius:16px;background:#fff;text-decoration:none;}
+  .row:active{border-color:var(--outline);}
+  .row .nm{font-weight:700;font-size:1.04rem;}
+  .row .sub{font-size:.84rem;color:var(--ink-soft);margin-top:2px;}
+  .round-card{display:flex;flex-direction:column;gap:12px;}
+  .round-card .title{font-family:"Baloo 2";font-weight:800;font-size:2rem;line-height:1;}
+  .stats{display:flex;justify-content:space-between;font-size:.9rem;gap:12px;}
+  .sec-title{display:flex;justify-content:space-between;align-items:baseline;}
+  .members div{padding:4px 0;}
+  .members span{color:var(--ink-soft);font-size:.88rem;}
+  .quote{border-left:4px solid var(--orange);padding:2px 0 2px 12px;}
+  .actions{display:flex;flex-direction:column;gap:6px;align-items:center;}
+  .actions .more{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px;}
+  .form-head{position:sticky;top:61px;z-index:10;background:#fff;margin:-18px -16px 0;padding:12px 16px;border-bottom:2px solid var(--line);}
+  .sec{font-family:"Space Mono";font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);font-weight:700;border-top:2px dashed var(--line);padding-top:18px;}
+  .help-card{display:flex;flex-direction:column;gap:8px;}
+  .help-card.hot{border-color:var(--red);box-shadow:4px 4px 0 var(--red);}
+  .help-card .meta{font-size:.82rem;color:var(--ink-soft);}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .center{text-align:center;}
+  .loading{display:flex;justify-content:center;padding:60px 0;color:var(--ink-faint);}
+  .hero-join{padding:8px 0 4px;}
+  .hero-join h1{font-size:clamp(2.6rem,12vw,3.4rem);}
+  .route{font-family:"Space Mono";font-weight:700;color:var(--ink-soft);letter-spacing:.1em;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top" id="top"></header>
+  <main id="main"><div class="loading"><span class="spin"></span></div></main>
+</div>
+<nav class="tabs" id="tabs" hidden><div class="tabs-in">
+  <a class="tab" href="#/" data-tab="teams">Teams</a>
+  <a class="tab" href="#/help" data-tab="help">Help<span class="badge" id="helpBadge" hidden></span></a>
+</div></nav>
+<script type="module" src="/js/mentor.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "mentor-desk",
+  "version": "1.0.0",
+  "description": "Run the mentoring and judging of an overnight hackathon from your mentors' phones.",
+  "license": "MIT",
+  "type": "module",
+  "repository": { "type": "git", "url": "git+https://github.com/jasimcm/mentor-desk.git" },
+  "homepage": "https://github.com/jasimcm/mentor-desk#readme",
+  "bugs": "https://github.com/jasimcm/mentor-desk/issues",
+  "keywords": ["hackathon", "mentoring", "judging", "event", "check-in", "vercel", "postgres"],
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "dev": "node dev.mjs",
+    "start": "node dev.mjs",
+    "test": "node test/e2e.mjs"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.17"
+  }
+}
