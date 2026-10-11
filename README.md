@@ -6,10 +6,9 @@ Mentors walk the floor checking in on every team through the night, raise and pi
 
 Built for, and run live at, **LAYOVER 2026**: an overnight student hackathon at TinkerSpace Calicut with 98 teams, 160 builders and 11 mentor-judges, who logged 303 check-ins and 143 score sheets in one night.
 
-<p>
-  <img src="docs/screenshots/mentor-home.png" alt="Mentor home: live round, search, and the teams still due" width="230">
-  <img src="docs/screenshots/organizer-live.png" alt="Organizer Live tab: rounds, morning judging stages, needs attention, mentor coverage" width="560">
-</p>
+**[▶ Try the live demo](https://mentor-desk-demo.vercel.app)**: the mentor app on your phone, the organizer dashboard at [/admin](https://mentor-desk-demo.vercel.app/admin) (password `demo`). It's a seeded event that resets every hour, so click anything.
+
+![A mentor files a check-in on their phone and it appears live on the organizer dashboard](docs/demo.gif)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjasimcm%2Fmentor-desk&env=ADMIN_PASSWORD&envDescription=Password%20for%20the%20organizer%20dashboard%20at%20%2Fadmin&project-name=mentor-desk)
 
@@ -79,6 +78,8 @@ Mentor Desk is static pages plus one serverless function, and needs Postgres.
 | `ADMIN_PASSWORD` | yes (in production) | Password for `/admin`. Without it the dashboard is locked. |
 | `DATABASE_URL` | yes (in production) | Postgres connection string. Without it, PGlite is used (local only). |
 | `MENTOR_CODE` | no | Event code mentors must enter to join. |
+| `DEMO_MODE` | no | `1` for a public demo: data resets to a seeded event every hour, backup and restore are off. |
+| `DEMO_RESET_MINUTES` | no | Reset interval in demo mode (default 60). |
 
 ## Running an event
 
