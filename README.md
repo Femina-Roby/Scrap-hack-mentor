@@ -34,6 +34,8 @@ Built for, and run live at, **LAYOVER 2026**: an overnight student hackathon at 
 
 Everything event-specific (the name, colours, rounds, every question, help types, the judging rubric, schedule) lives in **one config file**. See [docs/CONFIG.md](docs/CONFIG.md).
 
+**New here?** [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md) explains why it's useful and how every part works: rounds, locks, fair rotation, help routing, the shortlist signal, scoring and normalisation, and the architecture.
+
 ## Quick start
 
 ```bash
