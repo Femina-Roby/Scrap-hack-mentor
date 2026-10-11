@@ -1,4 +1,4 @@
-import { publicActions, mentorActions, organizerActions, mentorFromToken, HttpError } from '../lib/actions.js';
+import { publicActions, mentorActions, organizerActions, mentorFromToken, HttpError, demoTick } from '../lib/actions.js';
 
 function adminOk(pw) {
   const expected = process.env.ADMIN_PASSWORD || (process.env.DATABASE_URL ? null : 'admin');
@@ -10,6 +10,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   const { action, args = {} } = (typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body) || {};
   try {
+    await demoTick();
     let out;
     if (Object.hasOwn(publicActions, action)) {
       out = await publicActions[action](args);

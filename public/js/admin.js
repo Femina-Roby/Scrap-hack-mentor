@@ -49,7 +49,8 @@ async function viewLive() {
     const t = d.totals;
     const mentorOpts = d.mentors.filter(m => m.active).map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
     $main.innerHTML = `
-      ${d.config.practice ? `<div class="notice warn row-inline" style="justify-content:space-between"><span><b>Practice data is loaded.</b> Mentors see a "Practice run" banner. Before the event, go to Setup → Reset event data.</span><a class="btn btn-sm" href="#/setup">Setup</a></div>` : ''}
+      ${d.demo ? `<div class="notice info"><b>Public demo.</b> Click anything: open rounds, switch to judging, edit teams. Everything resets to a fresh event every hour. Backup and restore are switched off.</div>` : ''}
+      ${d.config.practice && !d.demo ? `<div class="notice warn row-inline" style="justify-content:space-between"><span><b>Practice data is loaded.</b> Mentors see a "Practice run" banner. Before the event, go to Setup → Reset event data.</span><a class="btn btn-sm" href="#/setup">Setup</a></div>` : ''}
       <div class="row-inline" style="justify-content:space-between">
         <h1 class="display">Live</h1>
         <div class="row-inline small"><span><b>${t.teams}</b> teams</span>·<span><b>${t.people}</b> people</span>·<span><b>${t.active}</b> mentors active</span>·<span>target <b>${t.target}</b> each</span></div>
@@ -611,7 +612,7 @@ async function viewSetup() {
         <p class="small muted">Rows with the same team name become one team. Blank team name = solo. Re-uploading updates names and never deletes a team.</p>
         <div id="preview"></div>
         <div class="row-inline"><span class="small"><b>${d.counts.teams}</b> teams · <b>${d.counts.people}</b> people · <b>${d.counts.solos}</b> solos loaded</span>
-          <span class="spacer"></span><button class="link small" id="demo">Load practice data (34 dummy teams)</button></div>
+          <span class="spacer"></span><button class="link small" id="demo">Load practice data (${CONFIG.practiceTeams.length} dummy teams)</button></div>
       </section>
       <section class="card" style="display:flex;flex-direction:column;gap:12px">
         <span class="eyebrow">Step 2 · Rounds</span>

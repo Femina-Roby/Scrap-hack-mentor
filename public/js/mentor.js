@@ -86,7 +86,7 @@ function fail(e) {
 }
 const pollEvery = (ms, fn) => { pollTimer = setInterval(() => { if (!document.hidden) fn(); }, ms); };
 
-function practiceBanner(on) {
+function practiceBanner(on, demo) {
   let el = document.getElementById('practice');
   if (!on) { if (el) el.remove(); return; }
   if (!el) {
@@ -94,7 +94,7 @@ function practiceBanner(on) {
     el.id = 'practice';
     el.className = 'notice warn small';
     el.style.cssText = 'margin:0 16px;border-radius:0 0 14px 14px;border-top:0;text-align:center';
-    el.innerHTML = '<b>Practice run · dummy teams.</b> Try anything. It all gets wiped before the event.';
+    el.innerHTML = demo ? '<b>Public demo · dummy teams.</b> Try anything. Everything resets every hour.' : '<b>Practice run · dummy teams.</b> Try anything. It all gets wiped before the event.';
     $top.after(el);
   }
 }
@@ -174,7 +174,7 @@ async function viewHome() {
   let h;
   try { h = await api('home'); } catch (e) { return fail(e); }
   me = h.me; header(); setHelpBadge(h.help);
-  practiceBanner(h.practice);
+  practiceBanner(h.practice, h.demo);
   if (h.judging) return viewJudgeHome(h);
   const s = h.stats;
   if (!h.round) {
