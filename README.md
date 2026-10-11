@@ -21,11 +21,13 @@ Built for, and run live at, **LAYOVER 2026**: an overnight student hackathon at 
 - **Fair by default.** A mentor is never sent back to a team they've already checked, teams from a mentor's college are skipped, and anyone can mark "I know this team". Later mentors see what a team *said* earlier, never other mentors' ratings.
 - **Team locks.** Start a check-in and the team is locked to you, so two mentors never fill in the same team at once.
 - **Help on demand.** Flag a team that needs hardware, AI, design… help; mentors with that skill get an alert on their phone.
-- **Morning judging.** Demo booths with nominations, then scoring of the finalists against your rubric (out of 50 by default).
+- **Follow-ups.** Go back to a team you helped and leave a note for everyone. Continuity without breaking the fresh-eyes rule (it isn't a check-in and adds no points).
+- **Top-two picks.** Each mentor picks their two favourite teams from any team they checked during the night.
+- **Morning judging.** Optional demo booths that steer judges toward teams they *haven't* seen (with an optional suggested number of nominations), then scoring of the finalists against your rubric (out of 50 by default).
 
 **For organizers (laptop, `/admin`)**
 - **Live:** open rounds, skip one, switch morning stages; a "needs attention" list (open help requests, off-track teams, unclear plans, teams away twice); which mentor is on which team and who needs a nudge.
-- **Finalists:** every team ranked by mentor signal (pool votes, final ratings, top-two picks), with booth nominations; star the shortlist.
+- **Finalists:** every team ranked by mentor signal (pool votes, final ratings, top-two picks), with booth nominations split into fresh and repeat, and *booth discoveries* flagged; star the shortlist.
 - **Scores:** averages per finalist and per criterion, a judge-normalised score, abstentions; each judge's sheet with delete.
 - **Mentors:** per-mentor analysis: check-ins, time per check-in, gaps, time spent helping, notes length, how generous or strict they judged.
 - **Teams:** add, edit, hide or delete teams (with table numbers); edit, move or delete any mentor's check-in.
@@ -87,7 +89,7 @@ Mentor Desk is static pages plus one serverless function, and needs Postgres.
 2. **Practice:** load practice data, let mentors try it, then **Reset event data**.
 3. **Back up** before every big step (Setup → Download backup). Backups hold mentors' sign-in tokens, so keep them private.
 4. **Night:** Live → click a round to make it live on every phone. Watch *Needs attention* and the mentors table.
-5. **Morning:** switch to Demo booths, star the shortlist on Finalists, open finalist scoring, close scoring.
+5. **Morning:** switch to Demo booths (if your event uses them), star the shortlist on Finalists once booths close, open finalist scoring, close scoring.
 
 ## How it's built
 
