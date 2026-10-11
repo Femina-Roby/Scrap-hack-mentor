@@ -54,11 +54,22 @@ try {
   await M('Cal', 'start', { id: t1 });
   await M('Cal', 'submit', { id: t1, round: 4, answers: { demoReady: 'Yes', built: 'X', strongest: 's', weakest: 'w', rating: '4', why: 'y' } });
   await M('Cal', 'savePicks', { first: { teamId: t1, why: 'best' } });
+  await M('Ana', 'savePicks', { first: { teamId: t1, why: 'saw them at check-in 1' } });
+  ok('top-two picks can be any team you checked tonight, not just the final round', (await M('Ana', 'picks')).first?.teamId === t1);
+  await M('Ben', 'followUp', { id: t1, note: 'Sensor fixed, demo works' });
+  const fu = await M('Cal', 'team', { id: t1 });
+  ok('follow-up notes are shared with other mentors', fu.followups.length === 1 && fu.approached.some(a => a.visits.some(v => v.kind === 'followup')));
   const b1 = (await A('board')).rows.find(r => r.id === t1);
-  ok('finalist points: pool Yes +1, rating 4 +2, top-two pick +1', b1.points === 4, `${b1.points}`);
+  ok('finalist points: pool Yes +1, rating 4 +2, two top-two picks +2', b1.points === 5, `${b1.points}`);
 
   await A('setStage', { stage: 'booths' });
+  const booth = await M('Ana', 'judgeList', { q: '' });
+  ok('booth list: teams you checked are separate from teams you haven’t seen', booth.seen.some(r => r.id === t1) && !booth.unseen.some(r => r.id === t1) && booth.unseen.length > 0);
+  ok('booth must-see only shows strong teams the judge hasn’t seen', !booth.mustSee.some(r => r.seen));
   await M('Ana', 'nominate', { id: t1, on: true });
+  await M('Ana', 'nominate', { id: t2, on: true });
+  const brd = (await A('board')).rows;
+  ok('nominations are counted fresh vs repeat', brd.find(r => r.id === t1).nomsFresh === 0 && brd.find(r => r.id === t2).nomsFresh === 1);
   for (const id of [t1, t2]) await A('star', { id, starred: true });
   await A('setStage', { stage: 'finals' });
   const full = Object.fromEntries(EVENT.rubric.map(r => [r.id, r.max]));

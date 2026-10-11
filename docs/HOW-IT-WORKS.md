@@ -99,6 +99,12 @@ At the top of each form, the mentor sees the **facts** earlier mentors recorded:
 
 The team page also shows a status line for every round ("✓ Check-in 1 · Asha, 9:12 PM", "● Check-in 3 · open now") and a list of every mentor who has been to the team.
 
+### Follow-ups: continuity without losing fresh eyes
+
+Mentors naturally want to go back to a team they helped: did the fix work? Repeat check-ins would undo the "fresh eyes" rule that makes the shortlist reliable, so instead a mentor who has checked a team can tap **Follow up with this team** and leave a short note ("sensor fixed, demo works end to end"). Follow-ups are visible to every mentor on the team page and to organizers in the team timeline and mentor analysis, but they are **not check-ins and add no points**.
+
+At LAYOVER, fresh eyes held completely: 97 of 98 teams were seen by three different mentors and nobody needed "check anyway". Follow-ups keep that while giving mentors the continuity they asked for.
+
 ### Drafts and bad Wi-Fi
 
 Answers are saved to the phone as they're typed, so a refresh, a dead battery or a lost connection doesn't lose a half-filled form. Every request retries up to 3 times with back-off (0.8 s, 1.6 s, 2.4 s) and shows a "Weak connection · retrying…" bar. Venue Wi-Fi at 3 AM is rarely good.
@@ -167,9 +173,9 @@ The **Finalists** tab ranks every team by *mentor signal*, built from several me
 |---|---|---|
 | Pool call | Check-in 3 "Send to the final judging pool?" | Yes +1, Maybe +0.5 |
 | Final rating | Check-in 4 "Recommend for the finalist round?" 1–4 | 4 → +2, 3 → +1 |
-| Top-two picks | Each mentor picks their two favourite teams from the ones they checked in check-in 4 | +1 per pick |
+| Top-two picks | Each mentor picks their two favourite teams from **any** team they checked during the night | +1 per pick |
 
-Ties are broken by picks, then final rating, then demo-readiness. The board also shows strengths tags, demo-readiness, how many mentors saw the team, and **booth nominations** from the morning. A dashed line marks the shortlist cut (e.g. top 20).
+Ties are broken by picks, then final rating, then demo-readiness. The board also shows strengths tags, demo-readiness, how many mentors saw the team, and **booth nominations** from the morning, split into **fresh** (from a judge who never checked the team overnight) and **repeat**. Teams with low night points but two or more fresh nominations are tagged **Booth discovery**: the teams that came together late or demo better than they describe. A dashed line marks the shortlist cut (e.g. top 20). Starring a finalist while booths are still open asks for confirmation.
 
 The organizer **stars** the finalists. The star is the final say; the points are a guide. Only starred teams appear in finalist scoring.
 
@@ -177,7 +183,9 @@ The organizer **stars** the finalists. The star is the final say; the points are
 
 ## The morning: judging
 
-1. **Demo booths.** Judges walk the floor science-fair style. Each project shows a one-line summary from the night notes. Judges tap **Nominate** for teams the panel must see, and their own nominations stay pinned at the top.
+1. **Demo booths** (optional: `judging.booths` in the config). Judges walk the floor science-fair style. Their booth screen is built to counter familiarity bias: their own nominations on top, then **Must-see · new to you** (teams strong in the night's notes that this judge hasn't checked), then **every other team they haven't seen**, each with its table and a one-line idea, and finally the teams they checked overnight, folded away. Nominating is optional; a suggested number ("suggested 3, optional") nudges every judge to contribute. Their favourites already count through top-two picks, so the screen asks them to nominate teams that surprise them.
+
+   *Why:* at LAYOVER, 85% of booth nominations went to teams the judge had already checked overnight (29% would be expected by chance), partly because the booth screen offered nothing to browse. Booths only add information if judges look beyond the teams they already know.
 2. **Shortlist.** The organizer stars the finalists on the Finalists tab.
 3. **Finalist scoring.** Judges see only the finalists. For each criterion in the rubric they tap one of six levels (0 to the maximum, in fifths), add an optional note, and save. They can change their score until scoring closes.
 4. **Close scoring.** Scores lock for deliberation.

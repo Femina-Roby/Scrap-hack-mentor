@@ -237,7 +237,7 @@ async function viewMine() {
   tabs('teams'); header({ back: '#/', title: 'Your teams tonight' }); loading();
   let d;
   try { d = await api('mine'); } catch (e) { return fail(e); }
-  const what = v => v.kind === 'checkin' ? `Check-in ${v.round}` : v.kind === 'away' ? 'Found away' : 'Helped';
+  const what = v => v.kind === 'checkin' ? `Check-in ${v.round}` : v.kind === 'away' ? 'Found away' : v.kind === 'followup' ? 'Follow-up' : 'Helped';
   $main.innerHTML = d.teams.length ? `
     <p class="muted small">Teams you've checked, found away, or helped. Tap one to go back to it.</p>
     <section class="list">${d.teams.map(t => `<a class="row" href="#/team/${t.id}">
@@ -283,7 +283,11 @@ async function viewTeam(id) {
     </section>` : ''}
     ${d.approached.length ? `<section class="card soft" style="display:flex;flex-direction:column;gap:8px">
       <span class="eyebrow">Mentors who've been here · ${d.approached.length}</span>
-      ${d.approached.map(m => `<div class="small"><b>${esc(m.name)}</b> <span class="muted">· ${esc(m.visits.map(v => `${v.kind === 'checkin' ? `Check-in ${v.round}` : v.kind === 'away' ? 'Found away' : 'Help'} ${fmtTime(v.at)}`).join(', '))}</span></div>`).join('')}
+      ${d.approached.map(m => `<div class="small"><b>${esc(m.name)}</b> <span class="muted">· ${esc(m.visits.map(v => `${v.kind === 'checkin' ? `Check-in ${v.round}` : v.kind === 'away' ? 'Found away' : v.kind === 'followup' ? 'Follow-up' : 'Help'} ${fmtTime(v.at)}`).join(', '))}</span></div>`).join('')}
+    </section>` : ''}
+    ${(d.followups || []).length ? `<section class="card soft" style="display:flex;flex-direction:column;gap:8px">
+      <span class="eyebrow">Follow-up notes · ${d.followups.length}</span>
+      ${d.followups.map(f => `<div class="small"><b>${esc(f.by || 'A mentor')}</b> <span class="faint">${fmtTime(f.at)}</span><div>${esc(f.note)}</div></div>`).join('')}
     </section>` : ''}
     ${d.openHelp ? `<a class="notice warn" href="#/help" style="text-decoration:none">This team has an open help request →</a>` : ''}
     <div class="actions" id="acts">
@@ -294,8 +298,15 @@ async function viewTeam(id) {
         </div>
         <button class="link faint small" id="know">I know this team personally</button>`
       : `<a class="btn" href="#/">Back to search</a>
-        ${soft ? `<button class="link" id="anyway">Check anyway</button>` : ''}
+        ${d.checkedByMe ? `<button class="link" id="fu">Follow up with this team</button>` : ''}
+        ${soft ? `<button class="link faint small" id="anyway">Check anyway</button>` : ''}
         ${round && st.key !== 'done' && st.key !== 'busy' ? '' : `<a class="link" href="#/raise/${team.id}">Ask for help for this team</a>`}`}
+    </div>
+    <div id="fuBox" hidden class="card" style="display:flex;flex-direction:column;gap:12px">
+      <label class="field"><span class="label">Follow-up note</span>
+        <textarea class="textarea" id="fuNote" placeholder="e.g. Sensor issue fixed, demo flow now works end to end"></textarea>
+        <span class="hint">For continuity: other mentors and organizers see it. It isn't a check-in and doesn't affect the shortlist.</span></label>
+      <button class="btn btn-primary" id="fuSave">Save follow-up</button>
     </div>
     <div id="anywayBox" hidden class="card" style="display:flex;flex-direction:column;gap:12px">
       <label class="field"><span class="label">Why check anyway?</span>
@@ -310,6 +321,13 @@ async function viewTeam(id) {
   on('start', e => { e.target.disabled = true; start().finally(() => (e.target.disabled = false)); });
   on('away', async () => {
     try { await api('away', { id: team.id }); toast(`Logged · ${team.name} not at their spot`); lastQuery = ''; go('#/'); } catch (e) { toast(e.message, true); }
+  });
+  on('fu', () => { document.getElementById('fuBox').hidden = false; document.getElementById('fuNote').focus(); });
+  on('fuSave', async e => {
+    const note = document.getElementById('fuNote').value.trim();
+    if (!note) return toast('Add a short note', true);
+    e.target.disabled = true;
+    try { await api('followUp', { id: team.id, note }); toast(`Follow-up saved · ${team.name}`); viewTeam(team.id); } catch (err) { toast(err.message, true); e.target.disabled = false; }
   });
   on('know', async () => {
     if (!confirm(`Skip ${team.name} because you know them? Another mentor will check them.`)) return;
@@ -533,18 +551,19 @@ async function viewPicks() {
   tabs('teams'); header({ back: '#/', title: 'Top two' }); loading();
   let d;
   try { d = await api('picks'); } catch (e) { return fail(e); }
-  const intro = `<div><div class="eyebrow">Final round</div><h1 class="display" style="font-size:2rem;margin-top:4px">Your top two for the shortlist</h1></div>`;
+  const intro = `<div><div class="eyebrow">Top-two picks</div><h1 class="display" style="font-size:2rem;margin-top:4px">Your top two for the shortlist</h1></div>`;
   if (!d.teams.length) {
-    $main.innerHTML = `${intro}<div class="notice">Your picks open once you finish a check-in in the final round. You can only pick teams you reviewed then.</div><a class="btn" href="#/">Back to teams</a>`;
+    $main.innerHTML = `${intro}<div class="notice">Your picks open once you've checked some teams. You can pick any team you checked tonight.</div><a class="btn" href="#/">Back to teams</a>`;
     return;
   }
-  const opt = sel => `<option value="">Pick a team</option>${d.teams.map(t => `<option value="${t.id}"${sel === t.id ? ' selected' : ''}>${esc(t.name)}</option>`).join('')}`;
+  const label = t => [t.name, tableLabel(t.table), t.idea && (t.idea.length > 38 ? t.idea.slice(0, 36) + '…' : t.idea)].filter(Boolean).join(' · ');
+  const opt = sel => `<option value="">Pick a team</option>${d.teams.map(t => `<option value="${t.id}"${sel === t.id ? ' selected' : ''}>${esc(label(t))}</option>`).join('')}`;
   const slot = (n, p) => `<div class="card" style="display:flex;flex-direction:column;gap:12px">
       <span class="eyebrow">Choice ${n}</span>
       <select class="select" id="t${n}" ${d.locked ? 'disabled' : ''}>${opt(p?.teamId)}</select>
       <textarea class="textarea" id="w${n}" placeholder="Why? One line" ${d.locked ? 'disabled' : ''}>${esc(p?.why || '')}</textarea></div>`;
   $main.innerHTML = `${intro}
-    <p class="muted">From the ${d.teams.length} team${d.teams.length > 1 ? 's' : ''} you reviewed in the final round. This is the strongest signal we use.</p>
+    <p class="muted">From any of the ${d.teams.length} team${d.teams.length > 1 ? 's' : ''} you checked tonight, in any round (most recent first). This is the strongest signal we use.</p>
     ${d.locked ? `<div class="notice warn">Picks are locked now. Thank you!</div>` : ''}
     ${slot(1, d.first)}${d.teams.length > 1 ? slot(2, d.second) : ''}
     ${d.locked ? '' : `<button class="btn btn-primary" id="save">Save my picks</button><p class="small muted center">You can change them until ${esc(d.lockAt)}.</p>`}
@@ -561,10 +580,11 @@ async function viewPicks() {
 // ---------------- briefing (shown once after joining, then from "How it works") ----------------
 
 const ST = CONFIG.judging.stages;
+const BOOTHS = CONFIG.judging.booths !== false;
 const MORNING = [
-  [ST.booths.time, `Round 1 · ${ST.booths.title}`, ST.booths.text],
+  ...(BOOTHS ? [[ST.booths.time, `Round 1 · ${ST.booths.title}`, ST.booths.text]] : []),
   [ST.shortlist.time, ST.shortlist.title, ST.shortlist.text],
-  [ST.finals.time, `Round 2 · ${ST.finals.title}`, ST.finals.text],
+  [ST.finals.time, `${BOOTHS ? 'Round 2 · ' : ''}${ST.finals.title}`, ST.finals.text],
   [ST.done.time, ST.done.title, ST.done.text],
 ];
 
@@ -574,7 +594,7 @@ const morning = () => `
       ${MORNING.map(([t, title, body]) => `<div style="display:flex;gap:12px;padding:10px 0;border-top:2px dashed var(--line)">
         <span class="mono small" style="width:76px;flex-shrink:0;color:var(--blue);font-weight:700">${t}</span>
         <div><b>${title}</b><div class="small muted">${body}</div></div></div>`).join('')}
-      <p class="small faint" style="margin-top:6px">Your notes from tonight become a must-see list, so booth judging covers the strongest teams first.</p>
+      <p class="small faint" style="margin-top:6px">${BOOTHS ? 'Your notes from tonight become a must-see list. At the booths, look hardest at teams you haven’t seen: your favourites already count through your top-two picks.' : 'Your notes from tonight and your top-two picks build the shortlist.'}</p>
     </section>
     <section class="card" style="display:flex;flex-direction:column;gap:12px">
       <span class="eyebrow">Scored out of ${RUBRIC_TOTAL} marks</span>
@@ -633,7 +653,7 @@ async function viewBrief() {
     <section class="card" style="border-color:var(--orange);box-shadow:4px 4px 0 var(--orange)">
       <span class="eyebrow">Before ${esc(boot.picksLockAt || CONFIG.judging.picksLockAt)}</span>
       <div style="font-weight:800;font-size:1.15rem;margin-top:4px">Pick your top two</div>
-      <p class="small muted" style="margin-top:4px">From the teams you checked in the final round, choose your top two for the shortlist, with one line on why. This is the strongest signal we use.</p>
+      <p class="small muted" style="margin-top:4px">From any team you checked tonight, choose your top two for the shortlist, with one line on why. This is the strongest signal we use.</p>
     </section>
 
     ${morning()}
@@ -652,7 +672,8 @@ const STAGE = {
 
 async function viewJudgeHome(h) {
   const j = h.judging, st = STAGE[j.stage];
-  const stat = j.stage === 'booths' ? `<span><b>You nominated ${j.noms}</b> team${j.noms === 1 ? '' : 's'}</span>`
+  const target = CONFIG.judging.nominationTarget || 0;
+  const stat = j.stage === 'booths' ? `<span><b>You nominated ${j.noms}</b> team${j.noms === 1 ? '' : 's'}${target ? ` <span style="opacity:.75">· suggested ${target}, optional</span>` : ''}</span>`
     : `<span><b>You scored ${j.scored}</b> of ${j.finalists} finalists</span>`;
   const pct = j.stage === 'booths' ? 0 : Math.round(j.scored / Math.max(j.finalists, 1) * 100);
   $main.innerHTML = `
@@ -665,14 +686,16 @@ async function viewJudgeHome(h) {
     </section>
     ${j.stage === 'booths' ? `<div class="search">${ICON_SEARCH}
       <input class="input" id="q" type="search" placeholder="Team or member name" autocomplete="off" spellcheck="false" aria-label="Search team or member name">
-      <button class="clear" id="clr" aria-label="Clear" hidden>×</button></div>` : ''}
+      <button class="clear" id="clr" aria-label="Clear" hidden>×</button></div>
+      <div class="notice info small">Your favourites already count through your top-two picks. Here, look hardest at <b>teams you haven’t seen</b>: nominate the ones that surprise you.</div>` : ''}
     <section id="res" class="list"></section>
+    <a class="link center" href="#/mine">Your teams tonight</a>
     <a class="link center" href="#/brief">How judging works · ${RUBRIC_TOTAL}-mark guide</a>`;
   const res = document.getElementById('res'), q = document.getElementById('q'), clr = document.getElementById('clr');
   const pill = t => t.conflict ? '<span class="pill skip">Connected · skip</span>'
     : j.stage === 'booths' ? (t.nominated ? '<span class="pill due">Nominated</span>' : '<span class="pill skip">View</span>')
     : t.score != null ? `<span class="pill done">${t.score} / ${RUBRIC_TOTAL}</span>` : j.stage === 'finals' ? '<span class="pill due">Score</span>' : '';
-  const row = t => `<a class="row" href="#/judge/${t.id}"><div><div class="nm">${esc(t.name)}</div><div class="sub">${esc(membersLine(t))}</div>${t.idea ? `<div class="small muted" style="margin-top:4px">${esc(t.idea.length > 120 ? t.idea.slice(0, 117) + '…' : t.idea)}</div>` : ''}</div>${pill(t)}</a>`;
+  const row = t => `<a class="row" href="#/judge/${t.id}"><div><div class="nm">${esc(t.name)}${j.stage === 'booths' && t.seen ? ' <span class="small faint" style="font-weight:600">· you checked</span>' : ''}</div><div class="sub">${esc(membersLine(t))}</div>${t.idea ? `<div class="small muted" style="margin-top:4px">${esc(t.idea.length > 120 ? t.idea.slice(0, 117) + '…' : t.idea)}</div>` : ''}</div>${pill(t)}</a>`;
   // Booths: the judge's own nominations, always on top.
   const mineBlock = r => j.stage === 'booths' && (r.nominated || []).length
     ? `<div class="sec-title"><span class="eyebrow">Your nominations · ${r.nominated.length}</span><span class="small faint">tap to change</span></div>${r.nominated.map(row).join('')}`
@@ -685,10 +708,12 @@ async function viewJudgeHome(h) {
     if (my !== seq) return;
     if (r.stage !== j.stage) return route();
     if (j.stage === 'booths' && !query) {
-      res.innerHTML = mineBlock(r) + (r.results.length
-        ? `<div class="sec-title"><span class="eyebrow">Must-see first · ${r.results.length}</span><span class="small faint">from tonight's notes</span></div>${r.results.map(row).join('')}
-           <p class="small muted center">Then walk the rest of the floor and search any team to nominate it.</p>`
-        : `<div class="notice">Walk the floor and search any team to see it and nominate it.</div>`);
+      const sec = (title, note, list) => list.length ? `<div class="sec-title"><span class="eyebrow">${title} · ${list.length}</span><span class="small faint">${note}</span></div>${list.map(row).join('')}` : '';
+      res.innerHTML = mineBlock(r)
+        + sec('Must-see · new to you', 'strong in tonight’s notes', r.mustSee || [])
+        + sec('Teams you haven’t seen', 'fresh eyes count most', (r.unseen || []).filter(t => !(r.mustSee || []).some(m => m.id === t.id)))
+        + ((r.seen || []).length ? `<details class="card soft" style="padding:10px 14px"><summary class="eyebrow" style="cursor:pointer">Teams you checked tonight · ${r.seen.length}</summary>
+            <div class="list" style="margin-top:10px">${r.seen.map(row).join('')}</div></details>` : '');
     } else if (j.stage === 'booths') {
       res.innerHTML = r.results.length ? r.results.map(row).join('') : `<p class="muted center" style="padding:20px 0">No team or member called “${esc(query)}”.</p>`;
     } else {

@@ -83,7 +83,7 @@ You can add, remove and reword questions freely. These ids switch on built-in fe
 | 4 | `built`, `strongest`, `weakest` | The judge brief |
 | 4 | `rating` | Finalist points: `'4'` +2, `'3'` +1 (use values `'1'`–`'4'`) |
 
-Each mentor's top-two picks (round 4) add +1 per pick.
+Each mentor's top-two picks (from any team they checked during the night) add +1 per pick.
 
 ### `noteKeys`, `noteLabels`
 Which earlier answers the next mentor sees at the top of their form, per round, and their labels. Keep these to facts (what they built, what's blocking them); ratings are never shown to other mentors.
@@ -92,7 +92,9 @@ Which earlier answers the next mentor sees at the top of their form, per round, 
 The morning judging criteria: `{ id, label, max, hint? }`. Judges tap one of six levels per criterion (0 to `max` in fifths, rounded to one decimal). The total is the sum of `max`. Use short ids (letters only) and avoid `total` and `note`.
 
 ### `judging`
-- `shortlistSize`: the "top-N" cut line on the Finalists board.
+- `booths`: `true` (default) runs a demo-booth round where judges nominate teams. `false` skips it: the night's signal goes straight to the shortlist and finalist scoring, and the booth stage disappears from the Live tab and the mentor briefing.
+- `nominationTarget`: a suggested number of booth nominations per judge, shown as "suggested 3, optional". Nominating is never required. `0` hides the hint.
+- `shortlistSize`: the "top-N" cut line on the Finalists board, and the size of each judge's *Must-see* booth list.
 - `picksLockAt`: label for when top-two picks close.
 - `stages`: `booths`, `shortlist`, `finals`, `done`, each `{ time, title, text }` for the briefing and the Live tab.
 

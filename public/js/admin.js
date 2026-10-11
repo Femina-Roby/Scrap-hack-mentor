@@ -76,7 +76,7 @@ async function viewLive() {
         <div class="row-inline" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">Morning judging · click to switch every mentor's phone</span>
           <a class="link small" href="#/scores">See scores →</a></div>
         <div class="grid g4">${[
-          ['booths', `Round 1 · ${ST.booths.title}`, ST.booths.time, 'Judges see every project and nominate'],
+          ...(CONFIG.judging.booths === false ? [] : [['booths', `Round 1 · ${ST.booths.title}`, ST.booths.time, 'Judges see every project and nominate']]),
           ['shortlist', ST.shortlist.title, ST.shortlist.time, `Star ~${CONFIG.judging.shortlistSize} finalists on the Finalists tab`],
           ['finals', 'Round 2 · Finalist scoring', ST.finals.time, `Judges score each finalist out of ${RUBRIC_TOTAL}`],
           ['done', 'Close scoring', ST.done.time, 'Lock scores for deliberation'],
@@ -166,7 +166,7 @@ async function viewLive() {
 
 // ---------------- Finalists ----------------
 
-const TAGS = { potential: 'Potential', watchlist: 'Watchlist', attention: 'Needs attention', notready: 'Not ready' };
+const TAGS = { potential: 'Potential', watchlist: 'Watchlist', attention: 'Needs attention', notready: 'Not ready', discovery: 'Booth discovery' };
 let boardFilter = 'all';
 let boardSort = 'signal';
 
@@ -190,8 +190,9 @@ async function viewFinalists() {
       <div class="row-inline" style="justify-content:space-between">
         <div class="filters">
           <button class="chip${boardFilter === 'all' ? ' on' : ''}" data-f="all">All ${rows.length}</button>
-          ${Object.entries(TAGS).map(([k, l]) => `<button class="chip${boardFilter === k ? ' on' : ''}" data-f="${k}">${l} · ${count(k)}</button>`).join('')}
-          <button class="chip${boardFilter === 'noms' ? ' on' : ''}" data-f="noms">Booth nominated · ${rows.filter(r => r.noms).length}</button>
+          ${Object.entries(TAGS).filter(([k]) => k !== 'discovery').map(([k, l]) => `<button class="chip${boardFilter === k ? ' on' : ''}" data-f="${k}">${l} · ${count(k)}</button>`).join('')}
+          ${CONFIG.judging.booths === false ? '' : `<button class="chip${boardFilter === 'noms' ? ' on' : ''}" data-f="noms">Booth nominated · ${rows.filter(r => r.noms).length}</button>
+          <button class="chip${boardFilter === 'discovery' ? ' on' : ''}" data-f="discovery" title="Low mentor points, but nominated by 2+ judges who hadn't seen them overnight">Booth discoveries · ${count('discovery')}</button>`}
         </div>
         <label class="small row-inline">Sort by <select class="sel-sm" id="sort"><option value="signal">Mentor signal</option><option value="noms"${boardSort === 'noms' ? ' selected' : ''}>Booth nominations</option></select></label>
         <div class="row-inline">
@@ -211,13 +212,17 @@ async function viewFinalists() {
           <td>${r.picks ? `${r.picks} <span class="faint small">+${r.picks}</span>` : '<span class="faint">–</span>'}</td>
           <td>${esc(r.demoReady || '–')}</td>
           <td class="small">${Object.entries(r.strengths).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, n]) => `<span class="tag">${esc(k)} ×${n}</span>`).join('')}</td>
-          <td>${r.mentorsSeen}</td><td>${r.noms ? `<b>${r.noms}</b>` : '<span class="faint">–</span>'}</td><td>${status(r)}</td></tr>`).join('') || '<tr><td colspan="12" class="muted">Nothing here yet.</td></tr>'}</tbody>
+          <td>${r.mentorsSeen}</td><td title="Fresh = nominated by a judge who never checked them overnight">${r.noms ? `<b>${r.noms}</b>${r.nomsFresh ? ` <span class="small" style="color:var(--green)">${r.nomsFresh} fresh</span>` : ' <span class="small faint">repeat</span>'}` : '<span class="faint">–</span>'}</td><td>${status(r)}</td></tr>`).join('') || '<tr><td colspan="12" class="muted">Nothing here yet.</td></tr>'}</tbody>
       </table></div>
       <p class="small faint">Orange dashed line = top-${CONFIG.judging.shortlistSize} cut. ★ = your manual finalist pick (final say). Points: check-in 3 pool call Yes +1, Maybe +0.5 · final rating 4 +2, 3 +1 · each top-two pick +1. Ties: picks → final rating → demo-ready. Booth noms = judges who nominated the team at 7 AM. Starred teams are the finalists judges score. Click a row for the team timeline.</p>`;
     $main.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { boardFilter = b.dataset.f; load(); });
     document.getElementById('sort').onchange = e => { boardSort = e.target.value; load(); };
     $main.querySelectorAll('[data-star]').forEach(b => b.onclick = async e => {
       e.stopPropagation();
+      if (!b.classList.contains('on') && d.stage === 'booths' && !window.__boothWarned) {
+        if (!confirm('Booth nominations are still coming in. Star finalists now anyway?')) return;
+        window.__boothWarned = true;
+      }
       await api('star', { id: b.dataset.star, starred: !b.classList.contains('on') }).catch(err => toast(err.message, true)); load();
     });
     $main.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => { location.hash = `#/teams/${tr.dataset.id}`; });
@@ -348,10 +353,12 @@ async function viewTeams(id) {
   const card = n => {
     const c = d.checkins.find(x => x.round === n);
     const vis = d.visits.filter(v => v.round === n);
+    const fus = (d.followups || []).filter(f => f.round === n);
     const fl = d.flags.filter(f => f.round === n);
     const x = (attr, id, what) => `<button class="link small" ${attr}="${id}" aria-label="Delete ${what}" title="Delete" style="float:right;color:var(--red)">×</button>`;
     const extras = [
       ...vis.map(v => `<div class="greycard">${x('data-delvisit', v.id, 'away mark')}Away · ${fmtTime(v.at)} · ${esc(v.mentor || '')}</div>`),
+      ...fus.map(f => `<div class="greycard">Follow-up · ${fmtTime(f.at)} · ${esc(f.mentor || '')}<div>“${esc(f.note)}”</div></div>`),
       ...fl.map(f => `<div class="greycard">${x('data-delflag', f.id, 'help request')}Help: ${esc(f.type)}${f.note ? ` · “${esc(f.note)}”` : ''} · ${f.status === 'resolved' ? `resolved ${fmtTime(f.resolvedAt)}${f.takenBy ? ` by ${esc(f.takenBy)}` : ''}` : f.takenBy ? `${esc(f.takenBy)} on it` : 'open'}</div>`),
     ].join('');
     if (!c) return `<div style="display:flex;flex-direction:column;gap:8px"><div class="card soft"><span class="eyebrow">Check-in ${n}</span><p class="faint">Not checked yet</p></div>${extras}</div>`;
@@ -512,7 +519,7 @@ async function viewMentorStats() {
     const max = Math.max(1, ...rows.map(r => r.checkins));
     const ago = t => { if (!t) return '–'; const m = Math.floor((Date.now() - new Date(t)) / 60000); return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : fmtTime(t); };
     const what = i => i.kind === 'checkin' ? `Check-in ${i.round}${i.override ? ' · checked anyway' : ''}${i.recommend ? ` · pool: ${i.recommend}` : ''}`
-      : i.kind === 'away' ? `Found away (check-in ${i.round})` : i.kind === 'help' ? `Help: ${i.what}${i.open ? ' · still on it' : ''}` : `Started check-in ${i.round}, never submitted`;
+      : i.kind === 'away' ? `Found away (check-in ${i.round})` : i.kind === 'followup' ? `Follow-up: ${i.what}` : i.kind === 'help' ? `Help: ${i.what}${i.open ? ' · still on it' : ''}` : `Started check-in ${i.round}, never submitted`;
     const detail = r => `<tr data-detail="${esc(r.id)}"><td colspan="12" style="background:var(--bg-soft)">
       <table style="background:transparent"><thead><tr><th>When</th><th>Team</th><th>Where</th><th>What</th><th class="rn">Time spent</th><th class="rn">Gap before</th></tr></thead><tbody>
       ${r.items.map(i => `<tr><td class="mono small">${fmtTime(i.end || i.start)}</td><td><a href="#/teams/${i.teamId}"><b>${esc(i.team)}</b></a></td>

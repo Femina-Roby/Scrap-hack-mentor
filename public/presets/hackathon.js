@@ -126,6 +126,8 @@ export default {
   ],
 
   judging: {
+    booths: true,              // false = no demo-booth round: night signal → shortlist → finalist scoring
+    nominationTarget: 3,       // suggested booth nominations per judge (a hint, never required)
     shortlistSize: 20,
     picksLockAt: '6:15 AM',
     stages: {
