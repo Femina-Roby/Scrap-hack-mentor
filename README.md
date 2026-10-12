@@ -27,7 +27,7 @@ Built for, and run live at, **LAYOVER 2026**: an overnight student hackathon at 
 
 **For organizers (laptop, `/admin`)**
 - **Live:** open rounds, skip one, switch morning stages; a "needs attention" list (open help requests, off-track teams, unclear plans, teams away twice); which mentor is on which team and who needs a nudge.
-- **Finalists:** every team ranked by mentor signal (pool votes, final ratings, top-two picks), with booth nominations split into fresh and repeat, and *booth discoveries* flagged; star the shortlist.
+- **Finalists:** every team ranked by mentor signal (pool votes, final ratings, top-two picks), with booth nominations split into fresh and repeat, and *booth discoveries* flagged; star the shortlist. See [How scoring works](#how-scoring-works).
 - **Scores:** averages per finalist and per criterion, a judge-normalised score, abstentions; each judge's sheet with delete.
 - **Mentors:** per-mentor analysis: check-ins, time per check-in, gaps, time spent helping, notes length, how generous or strict they judged.
 - **Teams:** add, edit, hide or delete teams (with table numbers); edit, move or delete any mentor's check-in.
@@ -36,6 +36,54 @@ Built for, and run live at, **LAYOVER 2026**: an overnight student hackathon at 
 Everything event-specific (the name, colours, rounds, every question, help types, the judging rubric, schedule) lives in **one config file**. See [docs/CONFIG.md](docs/CONFIG.md).
 
 **New here?** [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md) explains why it's useful and how every part works: rounds, locks, fair rotation, help routing, the shortlist signal, scoring and normalisation, and the architecture.
+
+## How scoring works
+
+Mentor Desk keeps two kinds of numbers apart. **Night signals** decide *who judges should see*. **Morning marks** decide *who wins*. Night signals never count toward the marks.
+
+### 1. Night: mentor signal (builds the shortlist)
+
+Every team is checked by several different mentors through the night, and their answers add up to **points** on the Finalists board:
+
+| Signal | When | Points |
+|---|---|---|
+| "Send to the final judging pool?" | Check-in 3 | **Yes +1**, Maybe +0.5, No 0 |
+| "Recommend for the finalist round?" (1–4) | Check-in 4 | **4 → +2**, 3 → +1, 2 or 1 → 0 |
+| Top-two picks: each mentor names their two favourite teams from any team they checked during the night | End of night | **+1 per pick** |
+
+Ties are broken by top-two picks, then the recommendation, then demo-readiness. Mentors aren't sent back to teams they've already checked (overriding needs a reason the organizer sees), so a team's points come from independent opinions.
+
+### 2. Morning: booth nominations (optional)
+
+If the event runs demo booths (`judging.booths`), judges walk the floor and **nominate** teams the panel must see. Nominating is optional; the app suggests a number per judge. Nominations are counted as **fresh** (from a judge who never checked that team overnight) or **repeat**. A team with low night points but two or more fresh nominations is flagged as a **Booth discovery**.
+
+### 3. Shortlist
+
+The organizer **stars** the finalists on the Finalists board, using the points, the nominations and their own judgement. The star is the final say; the numbers are a guide. A dashed line marks the shortlist size (20 by default).
+
+### 4. Finalist scoring (decides the winner)
+
+Each judge scores each finalist against the rubric in your config. The default is **out of 50**:
+
+| Criterion | Marks |
+|---|---|
+| What was built | 20 |
+| Creativity & idea | 10 |
+| Theme fit (travel connection at LAYOVER) | 10 |
+| Execution | 5 |
+| Demo & experience | 5 |
+
+For each criterion, judges tap one of six levels from 0 to the maximum (for 20 marks: 0, 4, 8, 12, 16, 20). They can change their score until scoring closes.
+
+**How a team's score is calculated:**
+- **Average over the judges who scored it.** A judge who sits out a team never pulls its average down.
+- **Conflicts never count.** A judge who declared "I know this team", or shares a college with a member, can't score that team. If they declare it *after* scoring, their sheet is automatically left out (shown struck through, `counted = no` in the CSV).
+- **Ranked on the exact average**, shown to two decimals so rounding never decides a winner. Ties go to the higher first criterion, then the second.
+- **Normalised score**, shown alongside: each judge's totals are measured against that judge's own average and spread, averaged per team, and put back on the same scale. It evens out generous and strict judges, which matters most when judges scored different sets of teams. The ranking still uses the plain average, and the normalised rank is shown wherever it differs.
+
+**Example.** Three judges score a team 40, 30 and 20, then the judge who gave 20 declares they know the team. Their sheet is left out, so the team's average is (40 + 30) / 2 = **35**, not 30.
+
+The scores are a guide for deliberation: the judging panel makes the final call. See [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md#the-morning-judging) for the reasoning behind each rule.
 
 ## Quick start
 
