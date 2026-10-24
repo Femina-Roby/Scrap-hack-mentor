@@ -10,7 +10,7 @@ Built for, and run live at, **LAYOVER 2026**: an overnight student hackathon at 
 
 ![A mentor files a check-in on their phone and it appears live on the organizer dashboard](docs/demo.gif)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjasimcm%2Fmentor-desk&env=ADMIN_PASSWORD&envDescription=Password%20for%20the%20organizer%20dashboard%20at%20%2Fadmin&project-name=mentor-desk)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FFemina-Roby%2Fscrap-hack-mentor&env=ADMIN_PASSWORD&envDescription=Password%20for%20the%20organizer%20dashboard%20at%20%2Fadmin&project-name=scrap-hack-mentor)
 
 ---
 
@@ -88,8 +88,8 @@ The scores are a guide for deliberation: the judging panel makes the final call.
 ## Quick start
 
 ```bash
-git clone https://github.com/jasimcm/mentor-desk.git
-cd mentor-desk
+git clone https://github.com/Femina-Roby/scrap-hack-mentor.git
+cd scrap-hack-mentor
 npm install
 npm run dev            # http://localhost:3000  ·  organizer: /admin (password: admin)
 ```

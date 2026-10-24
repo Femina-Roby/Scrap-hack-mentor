@@ -6,10 +6,10 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Femina-Roby/scrap-hack-mentor-desk.git"
+    "url": "git+https://github.com/Femina-Roby/scrap-hack-mentor.git"
   },
-  "homepage": "https://github.com/Femina-Roby/scrap-hack-mentor-desk#readme",
-  "bugs": "https://github.com/Femina-Roby/scrap-hack-mentor-desk/issues",
+  "homepage": "https://github.com/Femina-Roby/scrap-hack-mentor#readme",
+  "bugs": "https://github.com/Femina-Roby/scrap-hack-mentor/issues",
   "keywords": [
     "hackathon",
     "mentoring",
